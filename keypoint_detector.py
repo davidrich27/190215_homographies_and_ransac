@@ -7,13 +7,13 @@ import random
 # local imports
 from convolution import *
 
-def detect_keypoints(g):
+def detect_keypoints(g, size=1, num_maxKeypoints=100):
 
     h_sobelu = sobel_u_kernel()
     h_sobelv = sobel_v_kernel()
     h_gaussian = gaussian_kernel(2, 2)
 
-    print('kernels calculated...')
+    # print('kernels calculated...')
 
     g_u = convolve(g, h_sobelu)
     g_u2 = np.multiply(g_u, g_u)
@@ -35,19 +35,18 @@ def detect_keypoints(g):
     # H = det(g)/tr(g)
     H = np.divide(H_det, H_tr)
 
-    print('harris matrix constructed...')
+    # print('harris matrix constructed...')
 
     # find local maxima
-    size = 1
     max = local_maxima(H, size)
 
     print('local maximas found...')
 
     ### Non-maximal Suppression
     # sort local maxima by Harris score
-    random.shuffle(max)
+    # random.shuffle(max)
+    max.sort(reverse=True)
     max = max[0:1000]
-    max.sort()
     suppressedMax = []
 
     # the nearest local maximal neighbor of each pt with greater Harris score
@@ -66,7 +65,9 @@ def detect_keypoints(g):
 
     # Sort Non-Maximal Suppressed List by distance
     suppressedMax.sort(reverse=True)
-    topMax = suppressedMax[0:100]
+    if num_maxKeypoints > len(suppressedMax):
+        num_maxKeypoints = len(suppressedMax)
+    topMax = suppressedMax[0:num_maxKeypoints]
     # get only points
     topPoints = [x[1][1] for x in topMax]
 
@@ -103,18 +104,36 @@ def check_if_local_maxima(H, size, width, height, u, v):
     # else, is maxima
     return True
 
+# Plot image keypoints and save to file
+def plot_and_savefig_keypoints(img, keypoints, keypoints_filename, num_keypoints=None):
+    if (num_keypoints==None or num_keypoints > len(keypoints)):
+        num_keypoints=len(keypoints)
+
+    for i in range(num_keypoints):
+        plt.scatter(x=keypoints[i][1], y=keypoints[i][0], c='b')
+    plt.imshow(img,cmap=plt.cm.gray)
+    plt.savefig(keypoints_filename)
+    plt.show()
+
 #############################################################################
 ##############################       MAIN     ###############################
 #############################################################################
 
 # # import image and convert to grayscale
-# I = plt.imread('noisy_big_chief.jpeg')
+# img_filename = 'class_photo1.jpg'
+# I = plt.imread(img_filename)
 # I = I.mean(axis=2)
 #
+# # detect keypoints
+# print('detecting keypoints...')
 # keypoints = detect_keypoints(I)
 # print('KEYPOINTS: \n', keypoints)
 #
-# for i in range(len(keypoints)):
-#     plt.scatter(x=keypoints[i][1], y=keypoints[i][0], c='b')
-# plt.imshow(I,cmap=plt.cm.gray)
-# plt.show()
+# # create filename for savefig
+# split = img_filename.split(".")
+# file = split[0]
+# ext = split[len(split)-1]
+# keypoints_filename = file + "_keypoints." + ext
+#
+# # plot and save figure
+# plot_and_savefig_keypoints(I,keypoints,keypoints_filename,1000)

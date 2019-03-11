@@ -9,8 +9,9 @@ import pickle
 from keypoint_detector import detect_keypoints
 
 # match features from img1 (P1) and img2 (P2), based on descriptor size l and ratio r
-def match_features(img1, P1, img2, P2, l, r):
+def match_features(img1, P1, img2, P2, l=21, r=0.5):
     matches = []
+    # distance from center of descriptor
     size = int((l - 1)/2)
 
     for idx1, p1 in enumerate(P1):
@@ -57,35 +58,55 @@ def get_pixel(img, pt, i, j):
         j = width-1
     return img[i,j]
 
+def plot_and_savefig_matches(img1, img2, matches, filename):
+    w1, h1 = img1.shape
+    w2, h2 = img2.shape
+
+    img_pair = np.column_stack((img1, img2))
+    plt.imshow(img_pair, cmap='gray')
+
+    for match in matches:
+        x1,y1 = match[0]
+        x2,y2 = match[1]
+        y2 += h1
+        plt.scatter(y1,x1, c='r')
+        plt.scatter(y2,x2, c='b')
+        plt.plot([y1,y2], [x1,x2], 'g--')
+    plt.savefig(filename)
+    plt.show()
 
 #############################################################################
 ##############################       MAIN     ###############################
 #############################################################################
 
-# import image and convert to grayscale
-img1 = plt.imread('class_photo1.jpg')
-img1 = img1.mean(axis=2)
-w1, h1 = img1.shape
-
-img2 = plt.imread('class_photo2.jpg')
-img2 = img2.mean(axis=2)
-w2, h2 = img2.shape
-
-# # get keypoints
-# print('detecting keypoints...')
-# P1 = detect_keypoints(img1)
-# P2 = detect_keypoints(img2)
+# # import image and convert to grayscale
+# img1_filename = 'class_photo1.jpg'
+# img1 = plt.imread(img1_filename)
+# img1 = img1.mean(axis=2)
+# w1, h1 = img1.shape
 #
-# # save keypoints to file
-# print('keypoints detected. Saving...')
-# keypoints = [P1, P2]
-# keypoints_file = open('keypoints.pkl', 'wb')
-# pickle.dump(keypoints, keypoints_file)
-# keypoints_file.close()
-
+# img2_filename = 'class_photo1.jpg'
+# img2 = plt.imread(img2_filename)
+# img2 = img2.mean(axis=2)
+# w2, h2 = img2.shape
+#
+# # # get keypoints
+# # print('detecting keypoints...')
+# # P1 = detect_keypoints(img1)
+# # P2 = detect_keypoints(img2)
+# #
+# # # save keypoints to file
+# # print('keypoints detected. Saving...')
+# # keypoints = [P1, P2]
+# # keypoints_filename = 'keypoints.'+ img1_filename + '.' + img2_filename + '.pkl'
+# # keypoints_file = open(keypoints_filename, 'wb')
+# # pickle.dump(keypoints, keypoints_file)
+# # keypoints_file.close()
+#
 # # load keypoints from file
 # print('loading keypoints...')
-# keypoints_file = open('keypoints.pkl', 'rb')
+# keypoints_filename = 'keypoints.'+ img1_filename + '.' + img2_filename + '.pkl'
+# keypoints_file = open(keypoints_filename, 'rb')
 # keypoints = pickle.load(keypoints_file)
 # P1,P2 = keypoints
 #
@@ -102,29 +123,33 @@ w2, h2 = img2.shape
 # matches = match_features(img1, P1, img2, P2, l, r)
 #
 # # save matches to file
-# matches_file = open('matches.pkl', 'wb')
+# print('matches found. Saving...')
+# matches_filename = 'matches.'+ img1_filename + '.' + img2_filename + '.pkl'
+# matches_file = open(matches_filename, 'wb')
 # pickle.dump(matches, matches_file)
-
-# load matches from file
-print('loading keypoints...')
-matches_file = open('matches.pkl', 'rb')
-matches = pickle.load(matches_file)
-
-# print('NUM MATCHES', len(matches))
-# print('MATCHES: \n', matches)
-
-img_pair = np.column_stack((img1, img2))
-plt.imshow(img_pair, cmap='gray')
-
-# plt.scatter(0, 0, c='r')
-# plt.scatter(h1, w1, c='r')
-# plt.scatter(h1+h2, w2, c='r')
-
-for match in matches:
-    x1,y1 = match[0]
-    x2,y2 = match[1]
-    y2 += h1
-    plt.scatter(y1,x1, c='r')
-    plt.scatter(y2,x2, c='b')
-    plt.plot([y1,y2], [x1,x2], 'g--')
-plt.show()
+#
+# # load matches from file
+# print('loading matches...')
+# matches_filename = 'matches.'+ img1_filename + '.' + img2_filename + '.pkl'
+# matches_file = open(matches_filename, 'rb')
+# matches = pickle.load(matches_file)
+#
+# # print('NUM MATCHES', len(matches))
+# # print('MATCHES: \n', matches)
+#
+# img_pair = np.column_stack((img1, img2))
+# plt.imshow(img_pair, cmap='gray')
+#
+# # plt.scatter(0, 0, c='r')
+# # plt.scatter(h1, w1, c='r')
+# # plt.scatter(h1+h2, w2, c='r')
+#
+# for match in matches:
+#     x1,y1 = match[0]
+#     x2,y2 = match[1]
+#     y2 += h1
+#     plt.scatter(y1,x1, c='r')
+#     plt.scatter(y2,x2, c='b')
+#     plt.plot([y1,y2], [x1,x2], 'g--')
+# plt.savefig('matches.jpg')
+# plt.show()
